@@ -16,12 +16,14 @@ sf::RenderWindow window(sf::VideoMode(WINDOW_X, WINDOW_Y), WINDOW_TITLE); // win
 //------------------
 
 //Game config
-int const fieldX = 30; // number of columns in-game
-int const fieldY = 30; // number of rows in-game
+bool gameSet = false; // A flag to define if the game need to be set
 
-int bombAmount = 100; // number of bombs in-game
+int const fieldX = 9; // number of columns in-game
+int const fieldY = 9; // number of rows in-game
 
-int safeSpacesAmount = fieldX * fieldY - bombAmount; // number of safe spaces left
+int bombAmount = 10; // number of bombs in-game
+
+int safeSpacesAmount; // number of safe spaces left
 
 sf::Color backgroundColoration; // for the randomization of the background color (not the background sprite)
 //-----------------
@@ -48,6 +50,7 @@ sf::Sprite spacesSpr[fieldX][fieldY];
 sf::Texture bgTex;
 sf::Sprite bgSpr;
 //----------------
+
 #pragma endregion
 
 class Settings {
@@ -443,7 +446,7 @@ class Game {
 		}
 
 		// reveal the entire field (including bombs)
-		void revealAllSpaces() {
+		void revealAllBombs() {
 
 			for (int i = 0; i < fieldX; ++i) {
 				for (int j = 0; j < fieldY; ++j) {
@@ -457,11 +460,11 @@ class Game {
 		}
 
 		void gameWon() {
-			revealAllSpaces();
+			revealAllBombs();
 		}
 
 		void gameLost() {
-			revealAllSpaces();
+			revealAllBombs();
 		}
 
 	public:
@@ -531,8 +534,10 @@ class Game {
 		void handleKeyboard(sf::Event event, Tests test) {
 
 			if (event.type == sf::Event::KeyPressed) {
+				if (event.key.code == sf::Keyboard::R) { // Z for a clue for where each bomb is
 
-				if (event.key.code == sf::Keyboard::Z) { // Z for a clue for where each bomb is
+					gameSet = false;
+				} else if (event.key.code == sf::Keyboard::Z) { // Z for a clue for where each bomb is
 
 					test.coutFieldStatus();
 				}
@@ -667,15 +672,21 @@ int main() {
 	Game game;
 	//---------------------------
 
-	settings.getSpacesTextures(); // initialize the "textures" variable
-	settings.setSpacesSprites(); // set what is each sprite from the field
-
-	screen.setBackground(); // sets how the background will appear
-
-	game.setBombs(); // setup the initial bombs
-	game.getSpacesHitbox(); // get all hitboxes for the spaces 
-
 	while (window.isOpen()) {
+		if (gameSet == false) {
+
+			settings.getSpacesTextures(); // initialize the "textures" variable
+			settings.setSpacesSprites(); // set what is each sprite from the field
+
+			screen.setBackground(); // sets how the background will appear
+
+			game.setBombs(); // setup the initial bombs
+			game.getSpacesHitbox(); // get all hitboxes for the spaces 
+
+			safeSpacesAmount = fieldX * fieldY - bombAmount;
+
+			gameSet = true;
+		}
 
 		sf::Event event;
 		while (window.pollEvent(event)) {
@@ -703,8 +714,6 @@ int main() {
 			//-------------------
 		}
 	}
-
-
 
 	return 0;
 }
