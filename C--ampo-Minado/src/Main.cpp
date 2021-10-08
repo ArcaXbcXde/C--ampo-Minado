@@ -16,10 +16,12 @@ sf::RenderWindow window(sf::VideoMode(WINDOW_X, WINDOW_Y), WINDOW_TITLE); // win
 //------------------
 
 //Game config
-int const fieldX = 8; // number of columns in-game
-int const fieldY = 10; // number of rows in-game
+int const fieldX = 30; // number of columns in-game
+int const fieldY = 30; // number of rows in-game
 
-int bombAmount = 10; // number of bombs in-game
+int bombAmount = 100; // number of bombs in-game
+
+int safeSpacesAmount = fieldX * fieldY - bombAmount; // number of safe spaces left
 
 sf::Color backgroundColoration; // for the randomization of the background color (not the background sprite)
 //-----------------
@@ -34,6 +36,7 @@ int fieldStatus[fieldX][fieldY]; // Marks for each bomb and number
 
 bool spacesRevealed[fieldX][fieldY]; // Flags for the entire field if it is revealed or not.
 
+bool flagged[fieldX][fieldY];
 
 string const SPRITESHEET_FILE = "resources/FieldsSpritesheet.png"; // used spritesheet place
 
@@ -344,75 +347,122 @@ class Game {
 			}
 		}
 
+		// reveal what is the space value to the player
+		void changeSprite(int i, int j) {
+
+			if (fieldStatus[i][j] == 1) {
+
+				spacesSpr[i][j].setTexture(textures[0][2]); // number 1
+			}
+			else if (fieldStatus[i][j] == 2) {
+
+				spacesSpr[i][j].setTexture(textures[1][2]); // number 2
+			}
+			else if (fieldStatus[i][j] == 3) {
+
+				spacesSpr[i][j].setTexture(textures[2][2]); // number 3
+			}
+			else if (fieldStatus[i][j] == 4) {
+
+				spacesSpr[i][j].setTexture(textures[3][2]); // number 4
+			}
+			else if (fieldStatus[i][j] == 5) {
+
+				spacesSpr[i][j].setTexture(textures[0][3]); // number 5
+			}
+			else if (fieldStatus[i][j] == 6) {
+
+				spacesSpr[i][j].setTexture(textures[1][3]); // number 6
+			}
+			else if (fieldStatus[i][j] == 7) {
+
+				spacesSpr[i][j].setTexture(textures[2][3]); // number 7
+			}
+			else if (fieldStatus[i][j] == 8) {
+
+				spacesSpr[i][j].setTexture(textures[3][3]); // number 8
+			}
+		}
+
 		// reveal a single space
 		void revealSpace(int i, int j) {
 
 			spacesRevealed[i][j] = true;
 
+
 			if (fieldStatus[i][j] >= 10) {
-				// game over
+				// game over (clicked on a bomb)
 				spacesSpr[i][j].setTexture(textures[1][1]); // exploded bomb
-			} else if (fieldStatus[i][j] == 1) {
+				gameLost();
+			} else {
 
-				spacesSpr[i][j].setTexture(textures[0][2]); // number 1
-			} else if (fieldStatus[i][j] == 2) {
+				safeSpacesAmount--;
+				cout << safeSpacesAmount << " spaces left\n";
 
-				spacesSpr[i][j].setTexture(textures[1][2]); // number 2
-			} else if (fieldStatus[i][j] == 3) {
+				if (fieldStatus[i][j] != 0) {
 
-				spacesSpr[i][j].setTexture(textures[2][2]); // number 3
-			} else if (fieldStatus[i][j] == 4) {
+					changeSprite(i, j);
+				} else {
 
-				spacesSpr[i][j].setTexture(textures[3][2]); // number 4
-			} else if (fieldStatus[i][j] == 5) {
+					spacesSpr[i][j].setTexture(textures[2][0]); // empty space
 
-				spacesSpr[i][j].setTexture(textures[0][3]); // number 5
-			} else if (fieldStatus[i][j] == 6) {
+					// reveal all nearby spaces (could do with a for)
 
-				spacesSpr[i][j].setTexture(textures[1][3]); // number 6
-			} else if (fieldStatus[i][j] == 7) {
+					if (i > 0 && j > 0 && spacesRevealed[i - 1][j - 1] == false && flagged[i - 1][j - 1] == false) {
+						revealSpace(i - 1, j - 1);
+					}
+					if (i > 0 && spacesRevealed[i - 1][j] == false && flagged[i - 1][j] == false) {
+						revealSpace(i - 1, j);
+					}
+					if (i > 0 && j < fieldY - 1 && spacesRevealed[i - 1][j + 1] == false && flagged[i - 1][j + 1] == false) {
+						revealSpace(i - 1, j + 1);
+					}
+					if (j > 0 && spacesRevealed[i][j - 1] == false && flagged[i][j - 1] == false) {
+						revealSpace(i, j - 1);
+					}
+					if (j < fieldY - 1 && spacesRevealed[i][j + 1] == false && flagged[i][j + 1] == false) {
+						revealSpace(i, j + 1);
+					}
+					if (i < fieldX - 1 && j > 0 && spacesRevealed[i + 1][j - 1] == false && flagged[i + 1][j - 1] == false) {
+						revealSpace(i + 1, j - 1);
+					}
 
-				spacesSpr[i][j].setTexture(textures[2][3]); // number 7
-			} else if (fieldStatus[i][j] == 8) {
-
-				spacesSpr[i][j].setTexture(textures[3][3]); // number 8
-			} else if (fieldStatus[i][j] == 0) {
-
-				spacesSpr[i][j].setTexture(textures[2][0]); // empty space
-
-				// reveal all nearby spaces (could do with a for)
-
-				if (i > 0 && j > 0 && spacesRevealed[i - 1][j - 1] == false) {
-					revealSpace(i - 1, j - 1);
-				}
-				if (i > 0 && spacesRevealed[i - 1][j] == false) {
-					revealSpace(i - 1, j);
-				}
-				if (i > 0 && j < fieldY - 1 && spacesRevealed[i - 1][j + 1] == false) {
-					revealSpace(i - 1, j + 1);
-				}
-				if (j > 0 && spacesRevealed[i][j - 1] == false) {
-					revealSpace(i, j - 1);
-				}
-				if (j < fieldY - 1 && spacesRevealed[i][j + 1] == false) {
-					revealSpace(i, j + 1);
-				}
-				if (i < fieldX - 1 && j > 0 && spacesRevealed[i + 1][j - 1] == false) {
-					revealSpace(i + 1, j - 1);
+					if (i < fieldX - 1 && spacesRevealed[i + 1][j] == false && flagged[i + 1][j] == false) {
+						revealSpace(i + 1, j);
+					}
+					if (i < fieldX - 1 && j < fieldY - 1 && spacesRevealed[i + 1][j + 1] == false && flagged[i + 1][j + 1] == false) {
+						revealSpace(i + 1, j + 1);
+					}
 				}
 
-				if (i < fieldX - 1 && spacesRevealed[i + 1][j] == false) {
-					revealSpace(i + 1, j);
-				}
-				if (i < fieldX - 1 && j < fieldY - 1 && spacesRevealed[i + 1][j + 1] == false) {
-					revealSpace(i + 1, j + 1);
+				// game won (all spaces were discovered)
+				if (safeSpacesAmount <= 0) {
+					gameWon();
 				}
 			}
-
-
-
 		}
 
+		// reveal the entire field (including bombs)
+		void revealAllSpaces() {
+
+			for (int i = 0; i < fieldX; ++i) {
+				for (int j = 0; j < fieldY; ++j) {
+					if (fieldStatus[i][j] >= 10 && spacesRevealed[i][j] == false) {
+
+						spacesSpr[i][j].setTexture(textures[0][1]); // normal bomb
+					}
+					spacesRevealed[i][j] = true;
+				}
+			}
+		}
+
+		void gameWon() {
+			revealAllSpaces();
+		}
+
+		void gameLost() {
+			revealAllSpaces();
+		}
 
 	public:
 
@@ -477,10 +527,62 @@ class Game {
 			}
 		}
 
-		// handles the mouse click interactions
-		void mouseClick() {
+		// handles all key presses (except esc because closes the game)
+		void handleKeyboard(sf::Event event, Tests test) {
 
+			if (event.type == sf::Event::KeyPressed) {
+
+				if (event.key.code == sf::Keyboard::Z) { // Z for a clue for where each bomb is
+
+					test.coutFieldStatus();
+				}
+				else if (event.key.code == sf::Keyboard::X) { // X to show what is revealed or not in the field
+
+					test.coutSpacesRevealed();
+				}
+				else if (event.key.code == sf::Keyboard::C) {	// C to show all coordinates in the field
+
+					test.coutPositions();
+				}
+			}
+		}
+
+		// handles interactions in the moment when the left mouse button got pressed
+		void leftMousePressed(sf::Event event) {
 			if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+
+				// transform the actual mouse position from window coordinates to world coordinates
+				sf::Vector2f mouse = window.mapPixelToCoords(sf::Mouse::getPosition(window));
+
+				bool breakLoop = false; // just to be sure to break both loops
+
+				// if any hitbox contains the mouse in the moment the button is pressed
+				for (int i = 0; i < fieldX; ++i) {
+					for (int j = 0; j < fieldY; ++j) {
+
+						if (spacesHitbox[i][j].contains(mouse)) {
+							if (spacesRevealed[i][j] == false) {
+								spacesSpr[i][j].setTexture(textures[1][0]); // pressed space sprite
+
+							}
+
+							//else (or when finished) flags to break both loops
+							breakLoop = true;
+							break;
+						}
+					}
+					if (breakLoop == true) {
+						break;
+					}
+				}
+
+			}
+		}
+
+		// handles interactions in the moment when the left mouse button got released
+		void leftMouseReleased(sf::Event event) {
+
+			if ((event.type == sf::Event::MouseButtonReleased) && (event.mouseButton.button == sf::Mouse::Left)) {
 
 				// transform the actual mouse position from window coordinates to world coordinates
 				sf::Vector2f mouse = window.mapPixelToCoords(sf::Mouse::getPosition(window));
@@ -510,16 +612,55 @@ class Game {
 
 			}
 		}
-		/*
-		void gameLoop() {
 
-			
-		}*/
+		// handles all right mouse click interactions
+		void rightMouseClick(sf::Event event) {
+
+			if ((event.type == sf::Event::MouseButtonPressed) && (event.mouseButton.button == sf::Mouse::Right)) {
+				
+				// transform the actual mouse position from window coordinates to world coordinates
+				sf::Vector2f mouse = window.mapPixelToCoords(sf::Mouse::getPosition(window));
+
+				bool breakLoop = false; // just to be sure to break both loops
+
+				// if any hitbox contains the mouse in the moment the button is pressed
+				for (int i = 0; i < fieldX; ++i) {
+					for (int j = 0; j < fieldY; ++j) {
+
+						if (spacesHitbox[i][j].contains(mouse)) {
+
+							// if its an unrevealed spot
+							if (spacesRevealed[i][j] == false) {
+								flagged[i][j] = -flagged[i][j];
+
+								if (flagged[i][j] == false) {
+
+									spacesSpr[i][j].setTexture(textures[3][0]); // flagged space sprite
+									flagged[i][j] = true;
+								} else if (flagged[i][j] == true) {
+
+									spacesSpr[i][j].setTexture(textures[0][0]); // default space sprite
+									flagged[i][j] = false;
+								}
+							}
+
+							//else (or when finished) flags to break both loops
+							breakLoop = true;
+							break;
+						}
+					}
+					if (breakLoop == true) {
+						break;
+					}
+				}
+
+			}
+		}
 };
 
 int main() {
 
-	// Declare classes as objects
+	// Declared classes as objects
 	Settings settings;
 	Tests test;
 	Screen screen;
@@ -531,53 +672,36 @@ int main() {
 
 	screen.setBackground(); // sets how the background will appear
 
-
 	game.setBombs(); // setup the initial bombs
-
-	game.getSpacesHitbox(); // get all hitboxes for the 
-
-	//game.gameLoop(); // main game loop
+	game.getSpacesHitbox(); // get all hitboxes for the spaces 
 
 	while (window.isOpen()) {
 
 		sf::Event event;
 		while (window.pollEvent(event)) {
+			
+			// close app
 			if ((event.type == sf::Event::Closed) || (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))) {
 
 				window.close();
 			}
+			//------------------
 
-			if (event.type == sf::Event::KeyPressed) {
+			// keyboard check
+			game.handleKeyboard(event, test);
+			//-------------------
 
-				if (event.key.code == sf::Keyboard::Z) { // Z for a clue for where each bomb is
+			// mouse check
+			game.leftMousePressed(event);
+			game.leftMouseReleased(event);
 
-					test.coutFieldStatus();
-				}
-				else if (event.key.code == sf::Keyboard::X) { // X to show what is revealed or not in the field
+			game.rightMouseClick(event);
+			//-------------------
 
-					test.coutSpacesRevealed();
-				}
-				else if (event.key.code == sf::Keyboard::C) {	// C to show all coordinates in the field
-
-					test.coutPositions();
-				}
-
-
-			}
-
-
-			if (sf::Keyboard::isKeyPressed(sf::Keyboard::C)) {
-
-			}
+			// screen manipulation
+			screen.drawScreen();
+			//-------------------
 		}
-
-		// mouse check
-		game.mouseClick();
-		//-------------------
-
-		// screen manipulation
-		screen.drawScreen();
-		//-------------------
 	}
 
 
