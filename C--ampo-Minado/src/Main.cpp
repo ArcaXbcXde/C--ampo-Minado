@@ -460,7 +460,7 @@ public:
 
 	// the moment the mouse button is pressed over a non-revealed space, marks it as held
 	void leftMousePressed(sf::Event event) {
-		if (holding == false && sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+		if (holding == false && (sf::Mouse::isButtonPressed(sf::Mouse::Left) || sf::Mouse::isButtonPressed(sf::Mouse::Middle))) {
 
 			// transform the actual mouse position from window coordinates to world coordinates
 			sf::Vector2f mouse = window.mapPixelToCoords(sf::Mouse::getPosition(window));
@@ -566,13 +566,39 @@ public:
 	// if a non-revealed space is middle-clicked by the player (mouse-wheel click) and the player have pliers, reveals the spot, and if there is a bomb disarms it.
 	void middleMouseClick(sf::Event event) {
 
-		if (pliersAmout > 0 && (event.type == sf::Event::MouseButtonPressed) && (event.mouseButton.button == sf::Mouse::Middle)) {
+		if (pliersAmout > 0 && (event.type == sf::Event::MouseButtonReleased) && (event.mouseButton.button == sf::Mouse::Middle)) {
 
 			// transform the actual mouse position from window coordinates to world coordinates
 			sf::Vector2f mouse = window.mapPixelToCoords(sf::Mouse::getPosition(window));
 
+			holding = false;
 			breakLoop = false;
 
+			if (spacesHitbox[heldSpace[0]][heldSpace[1]].contains(mouse)) {
+
+				// if its an unrevealed spot
+				if (spacesRevealed[heldSpace[0]][heldSpace[1]] == false) {
+
+					pliersAmout--;
+					spacesRevealed[heldSpace[0]][heldSpace[1]] = true;
+
+					if (fieldStatus[heldSpace[0]][heldSpace[1]] >= 10) {
+
+						spacesSpr[heldSpace[0]][heldSpace[1]].setTexture(textures[0][1]); // normal bomb
+					}
+					else {
+						safeSpacesAmount--;
+						spacesSpr[heldSpace[0]][heldSpace[1]].setTexture(textures[3][1]); // disarmer
+					}
+
+				}
+			} else {
+
+				spacesSpr[heldSpace[0]][heldSpace[1]].setTexture(textures[0][0]);
+			}
+			heldSpace[0] = -1;
+			heldSpace[1] = -1;
+			/*
 			// if any hitbox contains the mouse in the moment the button is pressed
 			for (int i = 0; i < fieldX; ++i) {
 				for (int j = 0; j < fieldY; ++j) {
@@ -604,6 +630,7 @@ public:
 					break;
 				}
 			}
+			*/
 		}
 	}
 };
