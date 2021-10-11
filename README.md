@@ -27,5 +27,8 @@ Para a entrega você deve apresentar:
 - Um link com a build Windows
 ____________________________________________________________________________________________________
 
-link para repositório Git (esse repositório): https://github.com/ArcaXbcXde/C--ampo-Minado
-link com build Windows: ??? (to_do)
+Link de acesso ao repositório Git:
+https://github.com/ArcaXbcXde/C--ampo-Minado
+
+Link com build Windows (x64):
+https://github.com/ArcaXbcXde/C--ampo-Minado/releases/tag/1.0
