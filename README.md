@@ -27,8 +27,16 @@ Para a entrega você deve apresentar:
 - Um link com a build Windows
 ____________________________________________________________________________________________________
 
+
 Link de acesso ao repositório Git:
 https://github.com/ArcaXbcXde/C--ampo-Minado
 
 Link com build Windows (x64):
 https://github.com/ArcaXbcXde/C--ampo-Minado/releases/tag/1.0
+
+Link para esse documento:
+https://docs.google.com/document/d/11jVmla50TEFOLO5_mZgby9Rz1h34lElK/edit?usp=sharing&ouid=112505681553041733733&rtpof=true&sd=true/
+
+Link para o Paletton com as cores utilizadas:
+https://paletton.com/#uid=73x2c0kxlK3k4NXpYLvIXvXILoA
+
